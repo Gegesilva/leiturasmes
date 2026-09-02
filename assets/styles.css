@@ -4,7 +4,7 @@
     --ink: #1f2937;
     --muted: #5b6573;
     --line: #d9e0e8;
-    --accent: #0f172a;
+    --accent: #7c9ff1;
     --accent-2: #0b6b69;
 }
 
@@ -45,12 +45,6 @@ h1 {
     margin: 0;
     font-size: 34px;
     color: #fff;
-}
-
-.subtitle {
-    margin: 10px 0 0;
-    color: var(--muted);
-    max-width: 760px;
 }
 
 .hero-card,
@@ -124,12 +118,6 @@ h1 {
     padding: 28px;
     text-align: center;
     color: var(--muted);
-}
-
-.table-note {
-    margin: 12px 2px 0;
-    color: var(--muted);
-    font-size: 12px;
 }
 
 .alert {
