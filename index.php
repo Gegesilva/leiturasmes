@@ -168,7 +168,7 @@ if ($database === false) {
 
         $sqlDebug = sqlForDebug($sql, $params);
 
-        $statement = sqlsrv_query($database, $sql, $params);
+        $statement = sqlsrv_query($database, $sql, $params, ['QueryTimeout' => 120]);
         if ($statement === false) {
             if (function_exists('sqlsrv_errors')) {
                 $sqlErrorDebug = print_r(sqlsrv_errors(), true);
@@ -193,7 +193,7 @@ if ($database === false) {
                 'medatual' => (float) $record['MEDATUAL']
             ];
         }
-    } catch (Throwable $exception) {
+    } catch (Exception $exception) {
         $error = 'Não foi possível consultar o banco. Verifique a conexão e a extensão SQLSRV do PHP.';
     }
 }
@@ -316,7 +316,7 @@ if ($database === false) {
     <div class="loading-overlay" id="loading-overlay" aria-hidden="true">
         <div class="loading-box" role="status" aria-live="polite">
             <span class="loading-spinner" aria-hidden="true"></span>
-            <strong>Consultando o banco de dados...</strong>
+            <strong>CARREGANDO...</strong>
             <span>Aguarde enquanto os registros são carregados.</span>
         </div>
     </div>
