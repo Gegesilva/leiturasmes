@@ -1,7 +1,7 @@
 <?php
 
 $server = getenv('DB_SERVER') ?: 'localhost';
-$base = getenv('DB_DATABASE') ?: 'COMSERV';
+$base = getenv('DB_DATABASE') ?: 'MAQLAREM';
 $usuarioBanco = getenv('DB_USERNAME') ?: 'sa';
 $SenhaBanco = getenv('DB_PASSWORD') ?: 'databit@2022';
 

@@ -27,6 +27,19 @@ function dateForSql($month)
     return $month . '-01';
 }
 
+function monthNumber($month)
+{
+    list($year, $monthNumber) = array_map('intval', explode('-', $month));
+    return ($year * 12) + $monthNumber - 1;
+}
+
+function monthFromNumber($number)
+{
+    $year = (int) floor($number / 12);
+    $month = ($number % 12) + 1;
+    return sprintf('%04d-%02d', $year, $month);
+}
+
 function sqlDebugValue($value)
 {
     if ($value === null) {
@@ -52,15 +65,26 @@ function sqlForDebug($sql, array $params)
 $today = new DateTime('first day of this month');
 $defaultEnd = $today->format('Y-m');
 $defaultStartDate = clone $today;
-$defaultStartDate->modify('-2 months');
+$defaultStartDate->modify('-5 months');
 $defaultStart = $defaultStartDate->format('Y-m');
 $start = monthValue(isset($_POST['inicio']) ? $_POST['inicio'] : '', $defaultStart);
 $end = monthValue(isset($_POST['fim']) ? $_POST['fim'] : '', $defaultEnd);
+$changedPeriodField = isset($_POST['periodo_alterado']) ? $_POST['periodo_alterado'] : '';
 
 if (strtotime($end . '-01') < strtotime($start . '-01')) {
     $swap = $start;
     $start = $end;
     $end = $swap;
+}
+
+$startNumber = monthNumber($start);
+$endNumber = monthNumber($end);
+if (($endNumber - $startNumber) > 5) {
+    if ($changedPeriodField === 'inicio') {
+        $end = monthFromNumber($startNumber + 5);
+    } else {
+        $start = monthFromNumber($endNumber - 5);
+    }
 }
 
 $modelo = isset($_POST['modelo']) ? trim((string) $_POST['modelo']) : '';
@@ -155,6 +179,7 @@ if ($database === false) {
                     ON TB01008_CODIGO = TB02111_CODCLI
                 WHERE
                     " . implode("\n    AND ", $where) . "
+                    AND TB02112_SITUACAO = 'A'
                 GROUP BY
                     TB02112_CODIGO,
                     TB01010_REFERENCIA,
@@ -225,6 +250,7 @@ if ($database === false) {
                         placeholder="Ex.: 12345"></label>
                 <label><span>Início</span><input type="month" name="inicio" value="<?= esc($start) ?>"></label>
                 <label><span>Fim</span><input type="month" name="fim" value="<?= esc($end) ?>"></label>
+                <input type="hidden" name="periodo_alterado" id="periodo-alterado" value="">
                 <!-- <label><span>Depuração</span><input type="checkbox" name="debug_sql" value="1" <?= $showSqlDebug ? 'checked' : '' ?>> Exibir parâmetros SQL</label> -->
                 <button type="submit" id="submit-button">Buscar</button>
             </form>
@@ -321,7 +347,58 @@ if ($database === false) {
         </div>
     </div>
     <script>
-        document.querySelector('.filters').addEventListener('submit', function () {
+        var form = document.querySelector('.filters');
+        var startInput = form.querySelector('[name="inicio"]');
+        var endInput = form.querySelector('[name="fim"]');
+        var changedPeriodField = document.getElementById('periodo-alterado');
+
+        function monthNumber(value) {
+            var parts = value.split('-');
+            return (parseInt(parts[0], 10) * 12) + parseInt(parts[1], 10) - 1;
+        }
+
+        function monthFromNumber(number) {
+            var year = Math.floor(number / 12);
+            var month = (number % 12) + 1;
+            return year + '-' + String(month).padStart(2, '0');
+        }
+
+        function limitPeriod(changedField) {
+            if (!startInput.value || !endInput.value) {
+                return;
+            }
+
+            var startNumber = monthNumber(startInput.value);
+            var endNumber = monthNumber(endInput.value);
+
+            if (changedField === 'inicio' && endNumber - startNumber > 5) {
+                endInput.value = monthFromNumber(startNumber + 5);
+            }
+
+            if (changedField === 'fim' && endNumber - startNumber > 5) {
+                startInput.value = monthFromNumber(endNumber - 5);
+            }
+
+            if (endNumber < startNumber) {
+                if (changedField === 'inicio') {
+                    endInput.value = startInput.value;
+                } else {
+                    startInput.value = endInput.value;
+                }
+            }
+        }
+
+        startInput.addEventListener('change', function () {
+            changedPeriodField.value = 'inicio';
+            limitPeriod('inicio');
+        });
+
+        endInput.addEventListener('change', function () {
+            changedPeriodField.value = 'fim';
+            limitPeriod('fim');
+        });
+
+        form.addEventListener('submit', function () {
             var overlay = document.getElementById('loading-overlay');
             var button = document.getElementById('submit-button');
 
