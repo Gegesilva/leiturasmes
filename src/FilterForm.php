@@ -17,15 +17,22 @@ final class FilterForm
 
     public static function fromRequest(array $query)
     {
-        $today = new DateTimeImmutable('first day of this month');
-        $inicio = !empty($query['inicio']) ? new DateTimeImmutable($query['inicio'] . '-01') : $today->modify('-2 months');
-        $fim = !empty($query['fim']) ? new DateTimeImmutable($query['fim'] . '-01') : $today;
+        $today = new DateTime('first day of this month');
+        $inicio = !empty($query['inicio']) ? new DateTime($query['inicio'] . '-01') : clone $today;
+        $fim = !empty($query['fim']) ? new DateTime($query['fim'] . '-01') : clone $today;
 
-        if ($fim < $inicio) {
+        if (empty($query['inicio'])) {
+            $inicio = $inicio->modify('-2 months');
+        }
+
+        if ($fim->getTimestamp() < $inicio->getTimestamp()) {
             $temp = $inicio;
             $inicio = $fim;
             $fim = $temp;
         }
+
+        $inicio = new DateTime($inicio->format('Y-m-01'));
+        $fim = new DateTime($fim->format('Y-m-01'));
 
         $modelo = isset($query['modelo']) ? trim((string)$query['modelo']) : '';
         $contrato = isset($query['contrato']) ? trim((string)$query['contrato']) : '';
@@ -33,8 +40,8 @@ final class FilterForm
         return new self(
             $modelo,
             $contrato,
-            $inicio->modify('first day of this month'),
-            $fim->modify('first day of this month')
+            $inicio,
+            $fim
         );
     }
 
@@ -46,5 +53,10 @@ final class FilterForm
     public function endMonthValue()
     {
         return $this->endDate->format('Y-m');
+    }
+
+    public function periodLabel()
+    {
+        return $this->startDate->format('m/Y') . ' a ' . $this->endDate->format('m/Y');
     }
 }

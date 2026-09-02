@@ -3,8 +3,8 @@
 function buildMonths($startDate, $endDate)
 {
     $months = [];
-    $cursor = $startDate->modify('first day of this month');
-    $end = $endDate->modify('first day of this month');
+    $cursor = new DateTime($startDate->format('Y-m-01'));
+    $end = new DateTime($endDate->format('Y-m-01'));
 
     while ($cursor <= $end) {
         $months[] = new ReportMonth($cursor->format('Y-m'), mb_strtoupper($cursor->format('M/Y'), 'UTF-8'));
