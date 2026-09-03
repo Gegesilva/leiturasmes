@@ -161,7 +161,13 @@ if ($database === false) {
 
         $sql = "SELECT
                     TB02112_CODIGO AS CONTRATO,
-                    TB01010_REFERENCIA AS MODELO,
+                    CAST(
+                            ISNULL(
+                                NULLIF(LTRIM(RTRIM(TB01010_REFERENCIA)), ''),
+                                TB01010_NOME
+                            )
+                            AS VARCHAR(MAX)
+                        ) AS MODELO,
                     TB02111_CODCLI AS CODCLI,
                     TB01008_NOME AS CLIENTE,
                     TB02112_NUMSERIE AS SERIAL,
@@ -185,7 +191,8 @@ if ($database === false) {
                     TB01010_REFERENCIA,
                     TB02111_CODCLI,
                     TB01008_NOME,
-                    TB02112_NUMSERIE
+                    TB02112_NUMSERIE,
+                    TB01010_NOME
                 ORDER BY
                     TB01010_REFERENCIA,
                     TB01008_NOME,
@@ -274,7 +281,13 @@ if ($database === false) {
                     <h3>Parâmetros enviados ao SQL Server</h3>
                     <?php if ($params): ?>
                         <table>
-                            <thead><tr><th>Posição</th><th>Valor</th><th>Tipo PHP</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Posição</th>
+                                    <th>Valor</th>
+                                    <th>Tipo PHP</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <?php foreach ($params as $position => $param): ?>
                                     <tr>
@@ -318,18 +331,20 @@ if ($database === false) {
                     <tbody>
                         <?php if (!$rows && !$error): ?>
                             <tr>
-                                <td class="empty" colspan="<?= 6 + (count($months) * count($counterLabels)) ?>">Nenhum registro do banco encontrado.
+                                <td class="empty" colspan="<?= 6 + (count($months) * count($counterLabels)) ?>">Nenhum
+                                    registro do banco encontrado.
                                 </td>
                             </tr><?php endif; ?>
                         <?php foreach ($rows as $row): ?>
                             <tr>
                                 <td><?= esc($row['contrato']) ?></td>
-                                <td><?= esc($row['modelo']) ?></td>
+                                <td><?= $row['modelo'] ?></td>
                                 <td><?= esc($row['codcli']) ?></td>
                                 <td><?= esc($row['cliente']) ?></td>
                                 <td><?= esc($row['serial']) ?></td><?php foreach ($months as $month): ?>
                                     <?php foreach ($counterLabels as $counterKey => $counterLabel): ?>
-                                        <td class="number"><?= number_format($row['months'][$month['key']][$counterKey], 0, ',', '.') ?></td>
+                                        <td class="number">
+                                            <?= number_format($row['months'][$month['key']][$counterKey], 0, ',', '.') ?></td>
                                     <?php endforeach; ?>
                                 <?php endforeach; ?>
                                 <td class="number emphasis"><?= number_format($row['medatual'], 0, ',', '.') ?></td>

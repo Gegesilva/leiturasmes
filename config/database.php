@@ -1,9 +1,9 @@
 <?php
 
-$server = getenv('DB_SERVER') ?: 'localhost';
-$base = getenv('DB_DATABASE') ?: 'MAQLAREM';
-$usuarioBanco = getenv('DB_USERNAME') ?: 'sa';
-$SenhaBanco = getenv('DB_PASSWORD') ?: 'databit@2022';
+$server = getenv('DB_SERVER') ?: '192.168.254.197';
+$base = getenv('DB_DATABASE') ?: 'WC_NOVO';
+$usuarioBanco = getenv('DB_USERNAME') ?: 'wc';
+$SenhaBanco = getenv('DB_PASSWORD') ?: 'wc!@#$2023';
 
 if (!function_exists('sqlsrv_connect')) {
     return false;
